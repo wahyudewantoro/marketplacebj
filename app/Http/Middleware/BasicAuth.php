@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\LogService;
 use App\UserService;
+use Carbon\Carbon;
 use Closure;
 use Illuminate\Support\Facades\Log;
 
@@ -27,37 +29,54 @@ class BasicAuth
         $has_supplied_credentials = !(empty($_SERVER['PHP_AUTH_USER']) && empty($_SERVER['PHP_AUTH_PW']));
 
         $res = false;
+        /* $response = $next($request);
+        $logEntry = new LogService(); */
+
         if ($has_supplied_credentials) {
             $user = $_SERVER['PHP_AUTH_USER'];
             $pass = $_SERVER['PHP_AUTH_PW'];
-            $cek = UserService::where('username', $user)->where('password_md5',$pass)->first();
+            $cek = UserService::where('username', $user)->where('password_md5', $pass)->first();
 
-            // $cek=DB::select("select * from ws_user username=''")
-            /* Log::info('username '.$user);
-            Log::info('password_md5 '.$pass);
-            Log::info(count($cek)); */
             if ($cek != null) {
+                /* $logEntry->konten = $response->getContent();
+                $logEntry->ip_address = $request->ip();
+                $logEntry->tanggal = Carbon::now();
+                $logEntry->url = $request->fullUrl();
+                $logEntry->kode_bank = $cek->kode_bank;
+                $logEntry->http_method = $request->method();
+                $logEntry->status_code = $response->getStatusCode();
+                $logEntry->save(); */
+                
                 $res = true;
             }
-
         }
 
         if ($res == false) {
             header('HTTP/1.1 401 Authorization Required');
             header('WWW-Authenticate: Basic realm="Access denied"');
+
+            $res = [
+                "Status" => [
+                    "IsError" => "True",
+                    "ResponseCode" => "401",
+                    "ErrorDesc" => "Unauthorized "
+                ]
+            ];
+
+          /*   $logEntry = new LogService();
+            $logEntry->konten = json_encode($res);
+            $logEntry->ip_address = $request->ip();
+            $logEntry->tanggal = Carbon::now();
+            $logEntry->url = $request->fullUrl();
+            $logEntry->http_method = $request->method();
+            $logEntry->status_code = '401';
+            $logEntry->save(); */
+
+            return response()->json($res, 401);
             exit;
         }
 
-        // batas
-/* 
-        $is_not_authenticated = (!$has_supplied_credentials ||
-            $_SERVER['PHP_AUTH_USER'] != $AUTH_USER ||
-            $_SERVER['PHP_AUTH_PW']   != $AUTH_PASS);
-        if ($is_not_authenticated) {
-            header('HTTP/1.1 401 Authorization Required');
-            header('WWW-Authenticate: Basic realm="Access denied"');
-            exit;
-        } */
+
         return $next($request);
     }
 }

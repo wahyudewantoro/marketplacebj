@@ -10,6 +10,7 @@ use SpptHelp;
 // use DB;
 use Validator;
 use App\LogService;
+use App\UserService;
 use Debugbar;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -22,6 +23,11 @@ class InquiryController extends Controller
 
     public function index(Request $request)
     {
+
+        /* $username = $_SERVER['PHP_AUTH_USER'];
+        $pass = $_SERVER['PHP_AUTH_PW'];
+        $user = UserService::where('username', $username)->where('password_md5', $pass)->first(); */
+
 
         $error = "False";
         $kode = '00';
@@ -39,7 +45,6 @@ class InquiryController extends Controller
             // "KodeInstitusi" => 'required',
             //"NoHp" => 'required|numeric',
             //"Email" => 'required|email',
-
         ], $messages);
         $data = [];
         if ($validator->fails()) {
@@ -64,7 +69,7 @@ class InquiryController extends Controller
                     if ($ceksppt[0]->status_pembayaran_sppt == '0') {
                         $sppt = SpptHelp::Tagihan($nop, $request->MasaPajak);
                         $belumlunas = 0;
-                        
+
                         foreach ($sppt as $row) {
                             if ($row->status_pembayaran_sppt == '0') {
                                 $belumlunas += 1;
@@ -93,7 +98,7 @@ class InquiryController extends Controller
                     $msg = "Data tidak ditemukan";
                     $kode = '10';
                 }
-                
+
                 $data = array(
                     "Nop" => $nop,
                     "Nama" => $ceksppt[0]->nm_wp_sppt ?? '',

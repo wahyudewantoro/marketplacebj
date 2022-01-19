@@ -10,8 +10,9 @@ use App\Pembayaran;
 use App\PembayaranTahun;
 use App\PembayaranReversal;
 use App\PembayaranReversalTahun;
-use DB;
+
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ReversalController extends Controller
 {
@@ -21,8 +22,7 @@ class ReversalController extends Controller
         $data = [];
         $error = "False";
 
-        /* return response()->json($request->all());
-        die(); */
+
 
         $messages = [
             'required' => ':attribute harus disertakan',
@@ -62,30 +62,36 @@ class ReversalController extends Controller
             }
             $ntpd = $request->KodePengesahan;
             $tahun = implode(',', $tahun);
-            // $sppt = SpptHelp::cekNtpd($ntpd);
-            /* select * from WS_PEMBAYARAN_TAHUN
-where nop='' and tahun_pajak */
+
             $nop = $request->Nop;
             $sppt = PembayaranTahun::where('nop', $nop)->whereraw("tahun_pajak in (" . $tahun . ")")->get();
             if ($sppt->count() > 0) {
+
+                // return $sppt;
+
                 DB::beginTransaction();
                 try {
-                    $total=0;
-                    $kp="";
-                    foreach($sppt as $rst){
-                        $total+=$rst->total;
-                        $kp.=$rst->kodepengesahan.',';
+                    $total = 0;
+                    $kp = "";
+                    $kode_bank = "";
+                    foreach ($sppt as $rst) {
+                        $total += $rst->total;
+                        $kp .= $rst->kodepengesahan . ',';
+                        $kode_bank = $rst->kode_bank;
                     }
-                    $kp=substr($kp,0,1);
+                    $kp = substr($kp, 0, 1);
                     // insert ke reversal
-                    // $pb = Pembayaran::where('kodepengesahan', $ntpd)->first();
+                    
+
+                    // return $kode_bank;
                     $reversal = PembayaranReversal::create([
                         'NOP' => $nop,
                         'MERCHANT' => '000',
                         'DATETIME' =>  new Carbon($request->DateTime),
                         'TOTALBAYAR' => $total,
                         'KODEPENGESAHAN' => $kp,
-                        'KODEKP' => '0000'
+                        'KODEKP' => '0000',
+                        'KODE_BANK' => $kode_bank
                     ]);
 
                     // insert ke reversal detail
@@ -101,7 +107,8 @@ where nop='' and tahun_pajak */
                             'POKOK' => $pbd->pokok,
                             'DENDA' => $pbd->denda,
                             'TOTAL' => $pbd->total,
-                            'DATETIME' => new Carbon($request->DateTime)
+                            'DATETIME' => new Carbon($request->DateTime),
+                            'KODE_BANK' => $kode_bank
                         ];
                         PembayaranReversalTahun::create($detailrev);
                     }
@@ -109,7 +116,7 @@ where nop='' and tahun_pajak */
                     DB::commit();
 
 
-                    $data = $request->only(['Nop','Reference']);
+                    $data = $request->only(['Nop', 'Reference']);
                     $error = "False";
                     $msg = "sukses";
                     $code = "00";

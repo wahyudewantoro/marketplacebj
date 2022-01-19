@@ -20,20 +20,15 @@ class LogAPi
         return $next($request);
     }
 
-    // public function terminate($request, $response)
-    // {
-    // Log::info('app.requests', ['request' => $request->all(), 'response' => $response]);
+    
     public function terminate($request, $response)
     {
         $logEntry = new LogService();
-
         $logEntry->konten = $response->getContent();
         $logEntry->ip_address = $request->ip();
         $logEntry->tanggal = Carbon::now();
         $logEntry->url = $request->fullUrl();
         $logEntry->http_method =$request->method();
-        // $logEntry->request_header=$request->header();
-        // $logEntry->request_body=json_decode($request->getContent(),true);
         $logEntry->status_code= $response->getStatusCode();
         $logEntry->save();
     }

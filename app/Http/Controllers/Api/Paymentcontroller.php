@@ -10,8 +10,10 @@ use Illuminate\Support\Facades\Validator;
 use SpptHelp;
 use App\Pembayaran;
 use App\PembayaranTahun;
-use DB;
+use App\UserService;
+// use DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class Paymentcontroller extends Controller
 {
@@ -65,33 +67,38 @@ class Paymentcontroller extends Controller
             $tahun = implode(',', $tahun);
             $sppt = SpptHelp::TagihanTahun($nop, $tahun);
 
+            // return ['jumlah'=>count($sppt)] ;
+
             if (count($sppt) > 0) {
                 // cek jumlah tagihan
                 $totalBayar = $request->TotalBayar;
                 $tagihanDb = 0;
+
+                $lunas = 0;
                 foreach ($sppt as $ct) {
                     if ($ct->status_pembayaran_sppt == '0') {
                         $tagihanDb += $ct->total;
                     } else {
+                        $lunas = 1;
                         $tagihanDb = null;
                         $msg = "Data tagihan telah lunas";
                         $code = '13';
                         $error = "True";
                         break;
                     }
-
-
-                    // $min = Pbbminimal::where('thn_pbb_minimal', $ct->tahun)->first();
-                    // if ($min->nilai_pbb_minimal <= $ct->total) {
-                    // $tagihanDb += $ct->total;
-                    // }else{
-                    // $tagihanDb = $ct->total;
-                    // }
                 }
+
+                // return ['cek'=>$totalBayar .'=='. $tagihanDb];
 
                 if ($totalBayar == $tagihanDb) {
                     DB::beginTransaction();
                     try {
+                        // proses payment
+                        $username = $_SERVER['PHP_AUTH_USER'];
+                        $pass = $_SERVER['PHP_AUTH_PW'];
+                        $user = UserService::where('username', $username)->where('password_md5', $pass)->first();
+
+                        // return $user;
 
                         $bayar = Pembayaran::create([
                             'NOP' => $nop,
@@ -100,6 +107,7 @@ class Paymentcontroller extends Controller
                             'MERCHANT' => $request->Merchant,
                             'DATETIME' => new Carbon($request->DateTime),
                             'TOTALBAYAR' => $request->TotalBayar,
+                            'kode_bank' => trim($user->kode_bank)
                         ]);
 
                         foreach ($sppt as $spt) {
@@ -112,31 +120,43 @@ class Paymentcontroller extends Controller
                                 'POKOK' => $spt->pokok,
                                 'DENDA' => $spt->denda,
                                 'TOTAL' => $spt->total,
-                                'DATETIME' => $bayar->DATETIME
+                                'DATETIME' => $bayar->DATETIME,
+                                'kode_bank' => trim($user->kode_bank)
                             ]);
                         }
-
-                        DB::commit();
                         $data['Nop'] = $bayar->NOP;
                         $data['KodePengesahan'] = $bayar->KODEPENGESAHAN;
                         $data['KodeKp'] = $bayar->KODEKP;
 
-                        $error = "False";
+                        /* $error = "False";
                         $msg = "sukses";
-                        $code = "00";
+                        $code = "00"; */
+
+                        $msg = "Sukses";
+                        $code = '00';
+                        $error = "False";
+
+                        DB::commit();
                     } catch (\Exception $e) {
                         DB::rollback();
-
                         $error = "True";
                         $msg = $e->getMessage();
-                        // $msg = $sppt;
                         $code = "99";
                     }
+
+                    // return [$error, $msg, $code];
+
                 } else {
                     if ($totalBayar <> $tagihanDb) {
-                        $error = "True";
-                        $code = "14";
-                        $msg = "Jumlah tagihan yang dibayarkan tidak sesuai "; //.$totalBayar.' = '.$tagihanDb;
+                        if ($lunas == 1) {
+                            $msg = "Data tagihan telah lunas";
+                            $code = '13';
+                            $error = "True";
+                        } else {
+                            $error = "True";
+                            $code = "14";
+                            $msg = "Jumlah tagihan yang dibayarkan tidak sesuai ";
+                        }
                     }
                 }
             } else {
@@ -145,6 +165,7 @@ class Paymentcontroller extends Controller
                 $msg = "Data tagihan tidak ditemukan";
             }
         }
+
 
         $status = array(
             "Status" => [
