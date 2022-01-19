@@ -5,7 +5,9 @@ namespace App\Helpers;
 // use Illuminate\Support\Facades\DB;
 use App\SpptOltp;
 use App\PembayaranTahun;
-use DB;
+use Illuminate\Support\Facades\DB;
+
+// use DB;
 
 class Sppt
 {
@@ -85,7 +87,13 @@ class Sppt
 
         // select status_pembayaran_sppt,nm_wp_sppt,kelurahan_wp_sppt,thn_pajak_sppt tahun,pbb_yg_harus_dibayar_sppt pokok,get_denda@to17(kd_dati2, kd_kecamatan, kd_kelurahan, kd_blok, no_urut, kd_jns_op,thn_pajak_sppt,pbb_yg_harus_dibayar_sppt,tgl_jatuh_tempo_sppt,sysdate) Denda,pbb_yg_harus_dibayar_sppt + get_denda@to17(kd_dati2, kd_kecamatan, kd_kelurahan, kd_blok, no_urut, kd_jns_op,thn_pajak_sppt,pbb_yg_harus_dibayar_sppt,tgl_jatuh_tempo_sppt,sysdate) total
 
-        $sppt = SpptOltp::select(DB::raw("nm_wp_sppt,kelurahan_wp_sppt,thn_pajak_sppt tahun,pbb_yg_harus_dibayar_sppt pokok, Denda,
+        $sppt = SpptOltp::select(DB::raw("nm_wp_sppt,(select nm_kelurahan 
+        from ref_kelurahan@to17 a
+        where kd_kelurahan=sppt_oltp.kd_kelurahan and kd_kecamatan=sppt_oltp.kd_kecamatan) kelurahan_op,
+        (select nm_kecamatan
+        from ref_kecamatan@to17 a
+        where kd_kecamatan=sppt_oltp.kd_kecamatan) kecamatan_op,
+        kelurahan_wp_sppt,thn_pajak_sppt tahun,pbb_yg_harus_dibayar_sppt pokok, Denda,
         pbb_yg_harus_dibayar_sppt + denda
         total,status_pembayaran_sppt"))
             ->whereraw("kd_propinsi =substr('$nop',1,2) 

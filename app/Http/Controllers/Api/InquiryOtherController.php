@@ -2,25 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Helpers\Sppt;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Validator;
 use SpptHelp;
-// use DB;
-use Validator;
-use App\LogService;
-use App\UserService;
-use Debugbar;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
-class InquiryController extends Controller
+class InquiryOtherController extends Controller
 {
-
     public function index(Request $request)
     {
- 
+
         $error = "False";
         $kode = '00';
         $messages = [
@@ -33,7 +24,7 @@ class InquiryController extends Controller
             "Nop" => 'required|numeric|digits:18',
             "MasaPajak" => 'required|numeric|digits:4',
             "DateTime" => 'required|date_format:Y-m-d H:i:s',
-            "Merchant" => 'required|numeric',
+            // "Merchant" => 'required|numeric',
         ], $messages);
         $data = [];
         if ($validator->fails()) {
@@ -50,24 +41,18 @@ class InquiryController extends Controller
             // TagihanTahun
             $ceksppt = SpptHelp::TagihanTahun($nop, $request->MasaPajak);
             if (!empty($ceksppt)) {
-
+                // return $ceksppt[0];
                 if (count($ceksppt) > 0) {
+                    $row = $ceksppt[0];
                     $restagihan = [];
-                    if ($ceksppt[0]->status_pembayaran_sppt == '0') {
-                        $sppt = SpptHelp::Tagihan($nop, $request->MasaPajak);
-                        $belumlunas = 0;
-
-                        foreach ($sppt as $row) {
-                            if ($row->status_pembayaran_sppt == '0') {
-                                $belumlunas += 1;
-                                $restagihan[] = [
-                                    'Tahun' => $row->tahun,
-                                    'Pokok' => (int)$row->pokok,
-                                    'Denda' => (int)$row->denda,
-                                    'Total' => (int)$row->denda + $row->pokok
-                                ];
-                            }
-                        }                        
+                    if ($row->status_pembayaran_sppt == '0') {
+                        $restagihan = [
+                            'Tahun' => $row->tahun,
+                            'Pokok' => (int)$row->pokok,
+                            'Denda' => (int)$row->denda,
+                            'Total' => (int)$row->denda + $row->pokok
+                        ];
+                         
                         $msg = "sukses ";
                         $kode = '00';
                     } else {
@@ -79,16 +64,17 @@ class InquiryController extends Controller
                     $kode = '10';
                 }
 
-                $data = array(
+                $dataa= array(
                     "Nop" => $nop,
                     "Nama" => $ceksppt[0]->nm_wp_sppt ?? '',
-                    "Kelurahan" => $ceksppt[0]->kelurahan_wp_sppt ?? '',
-                    "KodeKp" => "0000",
-                    "KodeInstitusi" => $request->KodeInstitusi ?? '',
-                    "NoHp" => $request->NoHp ?? '',
-                    "Email" => $request->Email ?? '',
-                    "Tagihan" => $restagihan,
+                    "Kelurahan" => $ceksppt[0]->kelurahan_op?? '',
+                    "Kecamatan" => $ceksppt[0]->kecamatan_op?? '',
+                    "Dati2"=>"KAB MALANG",
+                    "Propinsi"=>"JAWA TIMUR"
                 );
+
+                $data=array_merge($dataa,$restagihan);
+
             } else {
                 $msg = "Data tidak ditemukan";
                 $error = "True";
@@ -103,9 +89,9 @@ class InquiryController extends Controller
                 'ErrorDesc' => $msg
             ]
         );
-        
+
         $response = \array_merge($data, $status);
- 
+
         return response()->json($response);
     }
 }

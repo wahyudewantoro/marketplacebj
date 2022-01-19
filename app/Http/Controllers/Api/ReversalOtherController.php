@@ -3,20 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use SpptHelp;
-use App\Pembayaran;
-use App\PembayaranTahun;
 use App\PembayaranReversal;
 use App\PembayaranReversalTahun;
-
+use App\PembayaranTahun;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
-class ReversalController extends Controller
+class ReversalOtherController extends Controller
 {
-    //
     public function index(Request $request)
     {
         $data = [];
@@ -38,10 +34,11 @@ class ReversalController extends Controller
         $validator = Validator::make($request->all(), [
             "Nop" => 'required|numeric|digits:18',
             // "KodePengesahan" => 'required|numeric',
-            "Reference" => 'required',
+            // "Reference" => 'required',
             "DateTime" => 'required|date_format:Y-m-d H:i:s',
-            "Tagihan" => "required|array|min:1|max:11",
-            "Tagihan.*.Tahun" => 'required|numeric|distinct|digits:4'
+            "Tahun" => 'required|numeric|distinct|digits:4'
+            // "Tagihan" => "required|array|min:1|max:11",
+            // "Tagihan.*.Tahun" => 'required|numeric|distinct|digits:4'
 
         ], $messages);
         if ($validator->fails()) {
@@ -54,12 +51,12 @@ class ReversalController extends Controller
             $code = "99";
         } else {
 
-            $tahun = [];
+            /* $tahun = [];
             foreach ($request->Tagihan as $rr) {
                 $tahun[] = implode(',', $rr);
-            }
-            $ntpd = $request->KodePengesahan;
-            $tahun = implode(',', $tahun);
+            } */
+            // $ntpd = $request->KodePengesahan;
+            $tahun =$request->Tahun;
 
             $nop = $request->Nop;
             $sppt = PembayaranTahun::where('nop', $nop)->whereraw("tahun_pajak in (" . $tahun . ")")->get();
@@ -79,7 +76,7 @@ class ReversalController extends Controller
                     }
                     $kp = substr($kp, 0, 1);
                     // insert ke reversal
-                    
+
 
                     // return $kode_bank;
                     $reversal = PembayaranReversal::create([
