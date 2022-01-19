@@ -67,8 +67,6 @@ class Paymentcontroller extends Controller
             $tahun = implode(',', $tahun);
             $sppt = SpptHelp::TagihanTahun($nop, $tahun);
 
-            // return ['jumlah'=>count($sppt)] ;
-
             if (count($sppt) > 0) {
                 // cek jumlah tagihan
                 $totalBayar = $request->TotalBayar;
@@ -88,7 +86,6 @@ class Paymentcontroller extends Controller
                     }
                 }
 
-                // return ['cek'=>$totalBayar .'=='. $tagihanDb];
 
                 if ($totalBayar == $tagihanDb) {
                     DB::beginTransaction();
@@ -97,21 +94,24 @@ class Paymentcontroller extends Controller
                         $username = $_SERVER['PHP_AUTH_USER'];
                         $pass = $_SERVER['PHP_AUTH_PW'];
                         $user = UserService::where('username', $username)->where('password_md5', $pass)->first();
-
-                        // return $user;
-
-                        $bayar = Pembayaran::create([
+                        // return trim($user->kode_bank);
+                        $kode_bank=trim($user->kode_bank);
+                        $databayar=[
                             'NOP' => $nop,
                             'KODEKP' => '0000',
                             'KODEPENGESAHAN' => SpptHelp::KodePengesahan(),
                             'MERCHANT' => $request->Merchant,
                             'DATETIME' => new Carbon($request->DateTime),
                             'TOTALBAYAR' => $request->TotalBayar,
-                            'kode_bank' => trim($user->kode_bank)
-                        ]);
+                            'KODE_BANK' => $kode_bank
+                        ];
+
+                        // return $databayar;
+
+                        $bayar = Pembayaran::create($databayar);
 
                         foreach ($sppt as $spt) {
-                            PembayaranTahun::create([
+                            $detailbayar=[
                                 'WS_PEMBAYARAN_ID' => $bayar->id,
                                 'NOP' => $bayar->NOP,
                                 'KODEPENGESAHAN' => $bayar->KODEPENGESAHAN,
@@ -121,16 +121,14 @@ class Paymentcontroller extends Controller
                                 'DENDA' => $spt->denda,
                                 'TOTAL' => $spt->total,
                                 'DATETIME' => $bayar->DATETIME,
-                                'kode_bank' => trim($user->kode_bank)
-                            ]);
+                                'KODE_BANK' => $kode_bank
+                            ];
+                            // return $detailbayar;
+                            PembayaranTahun::create($detailbayar);
                         }
                         $data['Nop'] = $bayar->NOP;
                         $data['KodePengesahan'] = $bayar->KODEPENGESAHAN;
                         $data['KodeKp'] = $bayar->KODEKP;
-
-                        /* $error = "False";
-                        $msg = "sukses";
-                        $code = "00"; */
 
                         $msg = "Sukses";
                         $code = '00';
@@ -143,8 +141,6 @@ class Paymentcontroller extends Controller
                         $msg = $e->getMessage();
                         $code = "99";
                     }
-
-                    // return [$error, $msg, $code];
 
                 } else {
                     if ($totalBayar <> $tagihanDb) {
@@ -166,7 +162,6 @@ class Paymentcontroller extends Controller
             }
         }
 
-
         $status = array(
             "Status" => [
                 'IsError' => $error,
@@ -174,10 +169,7 @@ class Paymentcontroller extends Controller
                 'ErrorDesc' => $msg
             ]
         );
-
         $response = \array_merge($data, $status);
-
-
         return response()->json($response);
     }
 }

@@ -8,7 +8,7 @@ class PembayaranTahun extends Model
 {
     //
     protected $table = 'WS_PEMBAYARAN_TAHUN';
-    protected $guarded = [''];
+    protected $guarded = [];
     public $incrementing = true;
     public $timestamps = true;
 }
