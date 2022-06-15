@@ -30,6 +30,7 @@ class Sppt
                                         and kd_blok=substr('$nop',11,3) 
                                         and no_urut=substr('$nop',14,4) 
                                         and kd_jns_op=substr('$nop',18,1) 
+                                        and data_billing_id is null
                                         order by thn_pajak_sppt desc) where rownum <=11
                                         "));
 
@@ -102,7 +103,9 @@ class Sppt
                                         and kd_kelurahan=substr('$nop',8,3)
                                     and kd_blok=substr('$nop',11,3) 
                                     and no_urut=substr('$nop',14,4) 
-                                    and kd_jns_op=substr('$nop',18,1) and status_pembayaran_sppt in (0,1) and thn_pajak_sppt in ($tahun)")->orderby('thn_pajak_sppt', 'desc')->get();
+                                    and kd_jns_op=substr('$nop',18,1) 
+                                    and data_billing_id is null
+                                    and status_pembayaran_sppt in (0,1) and thn_pajak_sppt in ($tahun)")->orderby('thn_pajak_sppt', 'desc')->get();
         if (count($sppt) == 0) {
             // and DATA_BILLING.expired_at>=sysdate
             $sppt=DB::select(DB::raw("SELECT *
