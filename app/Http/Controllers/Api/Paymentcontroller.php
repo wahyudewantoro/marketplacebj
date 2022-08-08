@@ -65,7 +65,8 @@ class Paymentcontroller extends Controller
             }
             $nop = $request->Nop;
             $tahun = implode(',', $tahun);
-            $sppt = SpptHelp::TagihanTahun($nop, $tahun);
+            $DateTime=$request->DateTime;
+            $sppt = SpptHelp::TagihanTahun($nop, $tahun,$DateTime);
 
             if (count($sppt) > 0) {
                 // cek jumlah tagihan
