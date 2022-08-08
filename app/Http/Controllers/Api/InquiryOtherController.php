@@ -39,7 +39,8 @@ class InquiryOtherController extends Controller
             $nop = $request->Nop;
 
             // TagihanTahun
-            $ceksppt = SpptHelp::TagihanTahun($nop, $request->MasaPajak);
+            $DateTime=$request->DateTime;
+            $ceksppt = SpptHelp::TagihanTahun($nop, $request->MasaPajak,$DateTime);
             if (!empty($ceksppt)) {
                 // return $ceksppt[0];
                 if (count($ceksppt) > 0) {

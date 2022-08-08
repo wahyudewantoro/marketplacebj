@@ -48,13 +48,14 @@ class InquiryController extends Controller
             $nop = $request->Nop;
 
             // TagihanTahun
-            $ceksppt = SpptHelp::TagihanTahun($nop, $request->MasaPajak);
+            $DateTime=$request->DateTime;
+        $ceksppt = SpptHelp::TagihanTahun($nop, $request->MasaPajak,$DateTime);
             if (!empty($ceksppt)) {
 
                 if (count($ceksppt) > 0) {
                     $restagihan = [];
                     if ($ceksppt[0]->status_pembayaran_sppt == '0') {
-                        $sppt = SpptHelp::Tagihan($nop, $request->MasaPajak);
+                        $sppt = SpptHelp::Tagihan($nop, $request->MasaPajak,$DateTime);
                         $belumlunas = 0;
 
                         foreach ($sppt as $row) {
