@@ -20,7 +20,7 @@ class InquiryController extends Controller
 
     public function index(Request $request)
     {
- 
+
         $error = "False";
         $kode = '00';
         $messages = [
@@ -48,14 +48,14 @@ class InquiryController extends Controller
             $nop = $request->Nop;
 
             // TagihanTahun
-            $DateTime=$request->DateTime;
-        $ceksppt = SpptHelp::TagihanTahun($nop, $request->MasaPajak,$DateTime);
+            $DateTime = $request->DateTime;
+            $ceksppt = SpptHelp::TagihanTahun($nop, $request->MasaPajak, $DateTime);
             if (!empty($ceksppt)) {
 
                 if (count($ceksppt) > 0) {
                     $restagihan = [];
                     if ($ceksppt[0]->status_pembayaran_sppt == '0') {
-                        $sppt = SpptHelp::Tagihan($nop, $request->MasaPajak,$DateTime);
+                        $sppt = SpptHelp::Tagihan($nop, $request->MasaPajak, $DateTime);
                         $belumlunas = 0;
 
                         foreach ($sppt as $row) {
@@ -68,7 +68,7 @@ class InquiryController extends Controller
                                     'Total' => (int)$row->denda + $row->pokok
                                 ];
                             }
-                        }                        
+                        }
                         $msg = "sukses ";
                         $kode = '00';
                     } else {
@@ -104,9 +104,9 @@ class InquiryController extends Controller
                 'ErrorDesc' => $msg
             ]
         );
-        
+
         $response = \array_merge($data, $status);
- 
+
         return response()->json($response);
     }
 }
