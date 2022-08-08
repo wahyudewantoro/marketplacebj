@@ -65,8 +65,8 @@ class Paymentcontroller extends Controller
             }
             $nop = $request->Nop;
             $tahun = implode(',', $tahun);
-            $DateTime=$request->DateTime;
-            $sppt = SpptHelp::TagihanTahun($nop, $tahun,$DateTime);
+            $DateTime = $request->DateTime;
+            $sppt = SpptHelp::TagihanTahun($nop, $tahun, $DateTime);
 
             if (count($sppt) > 0) {
                 // cek jumlah tagihan
@@ -86,8 +86,11 @@ class Paymentcontroller extends Controller
                         break;
                     }
                 }
-
-
+                /* 
+                return [
+                    'bayar' => $totalBayar,
+                    'tagihan' => $tagihanDb
+                ]; */
                 if ($totalBayar == $tagihanDb) {
                     DB::beginTransaction();
                     try {
@@ -96,8 +99,8 @@ class Paymentcontroller extends Controller
                         $pass = $_SERVER['PHP_AUTH_PW'];
                         $user = UserService::where('username', $username)->where('password_md5', $pass)->first();
                         // return trim($user->kode_bank);
-                        $kode_bank=trim($user->kode_bank);
-                        $databayar=[
+                        $kode_bank = trim($user->kode_bank);
+                        $databayar = [
                             'NOP' => $nop,
                             'KODEKP' => '0000',
                             'KODEPENGESAHAN' => SpptHelp::KodePengesahan(),
@@ -112,7 +115,7 @@ class Paymentcontroller extends Controller
                         $bayar = Pembayaran::create($databayar);
 
                         foreach ($sppt as $spt) {
-                            $detailbayar=[
+                            $detailbayar = [
                                 'WS_PEMBAYARAN_ID' => $bayar->id,
                                 'NOP' => $bayar->NOP,
                                 'KODEPENGESAHAN' => $bayar->KODEPENGESAHAN,
@@ -142,7 +145,6 @@ class Paymentcontroller extends Controller
                         $msg = $e->getMessage();
                         $code = "99";
                     }
-
                 } else {
                     if ($totalBayar <> $tagihanDb) {
                         if ($lunas == 1) {

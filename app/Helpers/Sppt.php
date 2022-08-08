@@ -101,7 +101,19 @@ class Sppt
                                             THEN
                                                 0
                                             ELSE SUM (DENDA) end  DENDA,
-                                        SUM (TOTAL) TOTAL
+                                        
+                                            CASE
+                                            WHEN (SELECT COUNT (1)
+                                                    FROM pemutihan_pajak
+                                                    WHERE     status = '1'
+                                                        AND tgl_mulai <= TRUNC (to_date('" . $tanggal . "','yyyymmdd'))
+                                                        AND tgl_selesai >= TRUNC (to_date('" . $tanggal . "','yyyymmdd'))) > 0
+                                            THEN
+                                                sum(pokok)
+                                            ELSE
+                                            SUM (TOTAL)
+                           end
+                                            TOTAL
                                     FROM DATA_BILLING DATA_BILLING
                                         JOIN BILLING_KOLEKTIF BILLING_KOLEKTIF
                                             ON BILLING_KOLEKTIF.DATA_BILLING_ID =
@@ -128,9 +140,6 @@ class Sppt
         } else {
             $tanggal = date('Ymd', strtotime($tanggal));
         }
-
-
-
         $sppt = SpptOltp::select(DB::raw("nm_wp_sppt,(select nm_kelurahan 
                                         from pbb.ref_kelurahan a
                                         where kd_kelurahan=sppt_oltp.kd_kelurahan and kd_kecamatan=sppt_oltp.kd_kecamatan) kelurahan_op,
@@ -205,8 +214,20 @@ class Sppt
                                             ELSE
                            SUM (DENDA) 
                            end
-                           DENDA,
-                           SUM (TOTAL) TOTAL,
+                           DENDA,                           
+                           CASE
+                                            WHEN (SELECT COUNT (1)
+                                                    FROM pemutihan_pajak
+                                                    WHERE     status = '1'
+                                                        AND tgl_mulai <= TRUNC (to_date('" . $tanggal . "','yyyymmdd'))
+                                                        AND tgl_selesai >= TRUNC (to_date('" . $tanggal . "','yyyymmdd'))) > 0
+                                            THEN
+                                                sum(pokok)
+                                            ELSE
+                                            SUM (TOTAL)
+                           end
+                           
+                            TOTAL,
                            CASE
                               WHEN KD_STATUS = 1
                               THEN
