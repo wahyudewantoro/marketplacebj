@@ -92,7 +92,15 @@ class Sppt
                                         END
                                             show,
                                         SUM (POKOK) POKOK,
-                                        SUM (DENDA) DENDA,
+                                        CASE
+                                            WHEN (SELECT COUNT (1)
+                                                    FROM pemutihan_pajak
+                                                    WHERE     status = '1'
+                                                        AND tgl_mulai <= TRUNC (to_date('" . $tanggal . "','yyyymmdd'))
+                                                        AND tgl_selesai >= TRUNC (to_date('" . $tanggal . "','yyyymmdd'))) > 0
+                                            THEN
+                                                0
+                                            ELSE SUM (DENDA) end  DENDA,
                                         SUM (TOTAL) TOTAL
                                     FROM DATA_BILLING DATA_BILLING
                                         JOIN BILLING_KOLEKTIF BILLING_KOLEKTIF
@@ -186,7 +194,18 @@ class Sppt
                            NAMA_KELURAHAN KELURAHAN_WP_SPPT,
                            DATA_BILLING.TAHUN_PAJAK TAHUN,
                            SUM (POKOK) POKOK,
-                           SUM (DENDA) DENDA,
+                           CASE
+                                            WHEN (SELECT COUNT (1)
+                                                    FROM pemutihan_pajak
+                                                    WHERE     status = '1'
+                                                        AND tgl_mulai <= TRUNC (to_date('" . $tanggal . "','yyyymmdd'))
+                                                        AND tgl_selesai >= TRUNC (to_date('" . $tanggal . "','yyyymmdd'))) > 0
+                                            THEN
+                                                0
+                                            ELSE
+                           SUM (DENDA) 
+                           end
+                           DENDA,
                            SUM (TOTAL) TOTAL,
                            CASE
                               WHEN KD_STATUS = 1
