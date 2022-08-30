@@ -17,7 +17,7 @@ class InquiryOtherController extends Controller
         $messages = [
             'required' => ':attribute harus disertakan',
             'numeric' => ':attribute harus angka',
-            'digits' => ':attribute kudu :digits digits.',
+            'digits' => ':attribute harus :digits digits.',
             'date_format' => ':attribute tidak sesuai format, pastikan format :attribute adalah :format.',
         ];
         $validator = Validator::make($request->all(), [
@@ -67,9 +67,9 @@ class InquiryOtherController extends Controller
 
                 $dataa= array(
                     "Nop" => $nop,
-                    "Nama" => $ceksppt[0]->nm_wp_sppt ?? '',
-                    "Kelurahan" => $ceksppt[0]->kelurahan_op?? '',
-                    "Kecamatan" => $ceksppt[0]->kecamatan_op?? '',
+                    "Nama" => $ceksppt[0]->nm_wp_sppt??'',
+                    "Kelurahan" => $ceksppt[0]->kelurahan_op??'',
+                    "Kecamatan" => $ceksppt[0]->kecamatan_op??'',
                     "Dati2"=>"KAB MALANG",
                     "Propinsi"=>"JAWA TIMUR"
                 );
