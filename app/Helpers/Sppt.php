@@ -31,13 +31,7 @@ class Sppt
                                                 THEN
                                                     0
                                                 ELSE
-                                            get_denda (kd_dati2,
-                                                    kd_kecamatan,
-                                                    kd_kelurahan,
-                                                    kd_blok,
-                                                    no_urut,
-                                                    kd_jns_op,
-                                                    thn_pajak_sppt,
+                                            get_denda (
                                                     PBB_YG_HARUS_DIBAYAR_SPPT,
                                                     tgl_jatuh_tempo_sppt,
                                                     to_date('" . $tanggal . "','yyyymmdd'))  end   Denda,
@@ -51,13 +45,7 @@ class Sppt
                                                 THEN
                                                     0
                                                 ELSE
-                                            get_denda (kd_dati2,
-                                                    kd_kecamatan,
-                                                    kd_kelurahan,
-                                                    kd_blok,
-                                                    no_urut,
-                                                    kd_jns_op,
-                                                    thn_pajak_sppt,
+                                            get_denda (
                                                     PBB_YG_HARUS_DIBAYAR_SPPT,
                                                     tgl_jatuh_tempo_sppt,
                                                     to_date('" . $tanggal . "','yyyymmdd'))  end   as total
@@ -156,13 +144,7 @@ class Sppt
                                             THEN
                                                 0
                                             ELSE
-                                        get_denda (kd_dati2,
-                                                kd_kecamatan,
-                                                kd_kelurahan,
-                                                kd_blok,
-                                                no_urut,
-                                                kd_jns_op,
-                                                thn_pajak_sppt,
+                                        get_denda (
                                                 PBB_YG_HARUS_DIBAYAR_SPPT,
                                                 tgl_jatuh_tempo_sppt,
                                                 to_date('" . $tanggal . "','yyyymmdd'))  end  Denda,
@@ -175,13 +157,7 @@ class Sppt
                                         THEN
                                         0
                                         ELSE
-                                    get_denda (kd_dati2,
-                                            kd_kecamatan,
-                                            kd_kelurahan,
-                                            kd_blok,
-                                            no_urut,
-                                            kd_jns_op,
-                                            thn_pajak_sppt,
+                                    get_denda (
                                             PBB_YG_HARUS_DIBAYAR_SPPT,
                                             tgl_jatuh_tempo_sppt,
                                             to_date('" . $tanggal . "','yyyymmdd'))  end
