@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\Pajak;
 use App\Helpers\Sppt;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -26,7 +27,7 @@ class InquiryController extends Controller
         $messages = [
             'required' => ':attribute harus disertakan',
             'numeric' => ':attribute harus angka',
-            'digits' => ':attribute kudu :digits digits.',
+            'digits' => ':attribute harus :digits digits.',
             'date_format' => ':attribute tidak sesuai format, pastikan format :attribute adalah :format.',
         ];
         $validator = Validator::make($request->all(), [
@@ -45,22 +46,38 @@ class InquiryController extends Controller
             $error = "True";
             $kode = '99';
         } else {
-            $nop = $request->Nop;
-
-            // TagihanTahun
+            $tahun = trim($request->MasaPajak);
             $DateTime = $request->DateTime;
-            $ceksppt = SpptHelp::TagihanTahun($nop, $request->MasaPajak, $DateTime);
-            if (!empty($ceksppt)) {
+            $nop = splitnop($request->Nop);
+            $objek = Pajak::dataObjek($nop, $tahun);
+            $data = [];
+            if ($objek) {
+                $nomor_op = $objek->kd_propinsi . $objek->kd_dati2 . $objek->kd_kecamatan . $objek->kd_kelurahan . $objek->kd_blok . $objek->no_urut . $objek->kd_jns_op;
+                $data = array(
+                    "Nop" => trim($nomor_op),
+                    "Nama" => $objek->nm_wp,
+                    "Kelurahan" => $objek->nm_kelurahan ?? '',
+                    "KodeKp" => "0000",
+                    "KodeInstitusi" => $request->KodeInstitusi ?? '',
+                    "NoHp" => $request->NoHp ?? '',
+                    "Email" => $request->Email ?? '',
+                );
 
-                if (count($ceksppt) > 0) {
-                    $restagihan = [];
-                    if ($ceksppt[0]->status_pembayaran_sppt == '0') {
-                        $sppt = SpptHelp::Tagihan($nop, $request->MasaPajak, $DateTime);
-                        $belumlunas = 0;
+                $restagihan = [];
 
+                if ($objek->status_pembayaran == '0') {
+
+                    if ($objek->data_billing_id <> '') {
+                        $msg = "Data Objek masuk dalam kode billing pembayaran kolektif";
+                        $error = "True";
+                        $kode = '10';
+                    } else {
+                        // data di temukan
+                        $sppt = Pajak::Tagihan($nop, $tahun, $DateTime);
+                        // return response()->json($sppt);
                         foreach ($sppt as $row) {
                             if ($row->status_pembayaran_sppt == '0') {
-                                $belumlunas += 1;
+                                // $belumlunas += 1;
                                 $restagihan[] = [
                                     'Tahun' => $row->tahun,
                                     'Pokok' => (int)$row->pokok,
@@ -69,32 +86,40 @@ class InquiryController extends Controller
                                 ];
                             }
                         }
-                        $msg = "sukses ";
+
+                        $msg = "Success";
+                        $error = "False";
                         $kode = '00';
-                    } else {
-                        $msg = "Data tagihan telah lunas";
-                        $kode = '13';
                     }
-                } else {
-                    $msg = "Data tidak ditemukan";
+                } else if ($objek->status_pembayaran == '3') {
+                    $msg = "Data objek dengan NOP tersebut tidak ditemukan";
+                    $error = "True";
                     $kode = '10';
+                } else {
+                    // tagihan lunas
+                    $msg = "Tagihan SPPT dengan Tahun pajak dimaksud telah dibayar";
+                    $error = "True";
+                    $kode = '13';
                 }
 
-                $data = array(
-                    "Nop" => $nop,
-                    "Nama" => $ceksppt[0]->nm_wp_sppt ?? '',
-                    "Kelurahan" => $ceksppt[0]->kelurahan_wp_sppt ?? '',
-                    "KodeKp" => "0000",
-                    "KodeInstitusi" => $request->KodeInstitusi ?? '',
-                    "NoHp" => $request->NoHp ?? '',
-                    "Email" => $request->Email ?? '',
-                    "Tagihan" => $restagihan,
-                );
+                $data['Tagihan'] = $restagihan;
             } else {
-                $msg = "Data tidak ditemukan";
+                $msg = "Data objek dengan NOP tersebut tidak ditemukan";
                 $error = "True";
                 $kode = '10';
             }
+
+            /* $status = array(
+                "Status" => [
+                    'IsError' => $error,
+                    'ResponseCode' => $kode,
+                    'ErrorDesc' => $msg
+                ]
+            ); */
+
+            /* $response = \array_merge($data, $status);
+
+            return response()->json($response); */
         }
 
         $status = array(

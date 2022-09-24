@@ -177,6 +177,7 @@ return [
         Yajra\Oci8\Oci8ServiceProvider::class,
         App\Providers\SpptServiceProvider::class,
         Barryvdh\Debugbar\ServiceProvider::class,
+        App\Providers\PajakServiceProvider::class,
     ],
 
     /*
@@ -229,6 +230,7 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
         'SpptHelp' => App\Helpers\Sppt::class,
         'Debugbar' => Barryvdh\Debugbar\Facade::class,
+        'Pajak' => App\Helpers\Pajak::class,
     ],
 
 ];

@@ -19,8 +19,7 @@ class Sppt
         } else {
             $tanggal = date('Ymd', strtotime($tanggal));
         }
-        $sppt = DB::select(DB::raw("SELECT * from (
-                                        select 
+        $sppt = DB::select(DB::raw("SELECT * from (select 
                                         status_pembayaran_sppt,nm_wp_sppt,kelurahan_wp_sppt,thn_pajak_sppt tahun,pbb_yg_harus_dibayar_sppt pokok,
                                         CASE
                                                 WHEN (SELECT COUNT (1)
