@@ -79,62 +79,7 @@ class ReversalController extends Controller
                         END;
                     "));
                 } else {
-                    // kobil
-                    /* DB::connection("oracle_satutujuh")->statement(db::raw("DELETE FROM pembayaran_sppt
-                                    WHERE ROWID IN (SELECT b.ROWID
-                              FROM sim_pbb.billing_kolektif a
-                                   JOIN pembayaran_sppt b
-                                      ON     a.tahun_pajak = b.thn_pajak_sppt
-                                         AND a.kd_propinsi = b.kd_propinsi
-                                         AND a.kd_dati2 = b.kd_dati2
-                                         AND a.kd_kecamatan = b.kd_kecamatan
-                                         AND a.kd_kelurahan = b.kd_kelurahan
-                                         AND a.kd_blok = b.kd_blok
-                                         AND a.no_urut = b.no_urut
-                                         AND a.kd_jns_op = b.kd_jns_op
-                             WHERE data_billing_id IN (SELECT data_billing_id
-                                                         FROM sim_pbb.data_billing
-                                                        WHERE  kobil ='" . $request->Nop . "'
-                                                              AND tahun_pajak  in (" . $th . ") and deleted_at is null ))")); */
-
-                    /*    DB::statement(db::raw("DELETE FROM pembayaran_sppt
-                                    WHERE ROWID IN (SELECT b.ROWID
-                              FROM sim_pbb.billing_kolektif a
-                                   JOIN pembayaran_sppt b
-                                      ON     a.tahun_pajak = b.thn_pajak_sppt
-                                         AND a.kd_propinsi = b.kd_propinsi
-                                         AND a.kd_dati2 = b.kd_dati2
-                                         AND a.kd_kecamatan = b.kd_kecamatan
-                                         AND a.kd_kelurahan = b.kd_kelurahan
-                                         AND a.kd_blok = b.kd_blok
-                                         AND a.no_urut = b.no_urut
-                                         AND a.kd_jns_op = b.kd_jns_op
-                             WHERE data_billing_id IN (SELECT data_billing_id
-                                                         FROM sim_pbb.data_billing
-                                                        WHERE  kobil ='" . $request->Nop . "'
-                                                              AND tahun_pajak  in (" . $th . ") and deleted_at is null ))"));
-
-
-
-
-                    DB::connection("oracle_satutujuh")->statement(db::raw("UPDATE sppt
-                    SET status_pembayaran_sppt = '0'
-                  WHERE ROWID IN (SELECT b.ROWID
-                                    FROM sim_pbb.billing_kolektif a
-                                         JOIN sppt b
-                                            ON     a.tahun_pajak = b.thn_pajak_sppt
-                                               AND a.kd_propinsi = b.kd_propinsi
-                                               AND a.kd_dati2 = b.kd_dati2
-                                               AND a.kd_kecamatan = b.kd_kecamatan
-                                               AND a.kd_kelurahan = b.kd_kelurahan
-                                               AND a.kd_blok = b.kd_blok
-                                               AND a.no_urut = b.no_urut
-                                               AND a.kd_jns_op = b.kd_jns_op
-                                   WHERE data_billing_id IN (SELECT data_billing_id
-                                                         FROM sim_pbb.data_billing
-                                                        WHERE  kobil ='" . $request->Nop . "'
-                                                              AND tahun_pajak  in (" . $th . ") and deleted_at is null ))")); */
-
+                   
 
                     DB::statement(DB::raw("BEGIN 
                                                               DELETE FROM pbb.pembayaran_sppt
@@ -171,7 +116,7 @@ class ReversalController extends Controller
                                                         WHERE  kobil ='" . $request->Nop . "'
                                                               AND tahun_pajak  in (" . $th . ") and deleted_at is null ));
 
-                                                              UPDATE pbb.sppt
+                    UPDATE pbb.sppt
                     SET status_pembayaran_sppt = '0'
                   WHERE ROWID IN (SELECT b.ROWID
                                     FROM sim_pbb.billing_kolektif a
@@ -187,7 +132,7 @@ class ReversalController extends Controller
                                    WHERE data_billing_id IN (SELECT data_billing_id
                                                          FROM sim_pbb.data_billing
                                                         WHERE  kobil ='" . $request->Nop . "'
-                                                              AND tahun_pajak  in (" . $th . ") and deleted_at is null ))
+                                                              AND tahun_pajak  in (" . $th . ") and deleted_at is null ));
 
 
                                                               UPDATE sim_pbb.data_billing
