@@ -78,27 +78,26 @@ class ReversalController extends Controller
                         commit;
                         END;
                     "));
-
-                    /*    DB::connection('oracle_satutujuh')->table("pembayaran_sppt")
-                        ->whereraw("kd_kecamatan='$kd_kecamatan' and kd_kelurahan='$kd_kelurahan' and kd_blok='$kd_blok' and no_urut='$no_urut' and kd_jns_op='$kd_jns_op' ")
-                        ->wherein('thn_pajak_sppt', $tahun)
-                        ->delete();
-
-                    DB::table("pembayaran_sppt")
-                        ->whereraw("kd_kecamatan='$kd_kecamatan' and kd_kelurahan='$kd_kelurahan' and kd_blok='$kd_blok' and no_urut='$no_urut' and kd_jns_op='$kd_jns_op' ")
-                        ->wherein('thn_pajak_sppt', $tahun)
-                        ->delete();
-
-                    DB::connection('oracle_satutujuh')->table("sppt")
-                        ->whereraw("kd_kecamatan='$kd_kecamatan' and kd_kelurahan='$kd_kelurahan' and kd_blok='$kd_blok' and no_urut='$no_urut' and kd_jns_op='$kd_jns_op' ")
-                        ->wherein('thn_pajak_sppt', $tahun)
-                        ->update(['status_pembayaran_sppt'=> '0']); */
                 } else {
                     // kobil
+                    /* DB::connection("oracle_satutujuh")->statement(db::raw("DELETE FROM pembayaran_sppt
+                                    WHERE ROWID IN (SELECT b.ROWID
+                              FROM sim_pbb.billing_kolektif a
+                                   JOIN pembayaran_sppt b
+                                      ON     a.tahun_pajak = b.thn_pajak_sppt
+                                         AND a.kd_propinsi = b.kd_propinsi
+                                         AND a.kd_dati2 = b.kd_dati2
+                                         AND a.kd_kecamatan = b.kd_kecamatan
+                                         AND a.kd_kelurahan = b.kd_kelurahan
+                                         AND a.kd_blok = b.kd_blok
+                                         AND a.no_urut = b.no_urut
+                                         AND a.kd_jns_op = b.kd_jns_op
+                             WHERE data_billing_id IN (SELECT data_billing_id
+                                                         FROM sim_pbb.data_billing
+                                                        WHERE  kobil ='" . $request->Nop . "'
+                                                              AND tahun_pajak  in (" . $th . ") and deleted_at is null ))")); */
 
-
-
-                    DB::connection("oracle_satutujuh")->statement(db::raw("DELETE FROM pembayaran_sppt
+                    /*    DB::statement(db::raw("DELETE FROM pembayaran_sppt
                                     WHERE ROWID IN (SELECT b.ROWID
                               FROM sim_pbb.billing_kolektif a
                                    JOIN pembayaran_sppt b
@@ -115,22 +114,8 @@ class ReversalController extends Controller
                                                         WHERE  kobil ='" . $request->Nop . "'
                                                               AND tahun_pajak  in (" . $th . ") and deleted_at is null ))"));
 
-                    DB::statement(db::raw("DELETE FROM pembayaran_sppt
-                                    WHERE ROWID IN (SELECT b.ROWID
-                              FROM sim_pbb.billing_kolektif a
-                                   JOIN pembayaran_sppt b
-                                      ON     a.tahun_pajak = b.thn_pajak_sppt
-                                         AND a.kd_propinsi = b.kd_propinsi
-                                         AND a.kd_dati2 = b.kd_dati2
-                                         AND a.kd_kecamatan = b.kd_kecamatan
-                                         AND a.kd_kelurahan = b.kd_kelurahan
-                                         AND a.kd_blok = b.kd_blok
-                                         AND a.no_urut = b.no_urut
-                                         AND a.kd_jns_op = b.kd_jns_op
-                             WHERE data_billing_id IN (SELECT data_billing_id
-                                                         FROM sim_pbb.data_billing
-                                                        WHERE  kobil ='" . $request->Nop . "'
-                                                              AND tahun_pajak  in (" . $th . ") and deleted_at is null ))"));
+
+
 
                     DB::connection("oracle_satutujuh")->statement(db::raw("UPDATE sppt
                     SET status_pembayaran_sppt = '0'
@@ -148,7 +133,74 @@ class ReversalController extends Controller
                                    WHERE data_billing_id IN (SELECT data_billing_id
                                                          FROM sim_pbb.data_billing
                                                         WHERE  kobil ='" . $request->Nop . "'
-                                                              AND tahun_pajak  in (" . $th . ") and deleted_at is null ))"));
+                                                              AND tahun_pajak  in (" . $th . ") and deleted_at is null ))")); */
+
+
+                    DB::statement(DB::raw("BEGIN 
+                                                              DELETE FROM pbb.pembayaran_sppt
+                                                              WHERE ROWID IN (SELECT b.ROWID
+                                                        FROM sim_pbb.billing_kolektif a
+                                                             JOIN pbb.pembayaran_sppt b
+                                                                ON     a.tahun_pajak = b.thn_pajak_sppt
+                                                                   AND a.kd_propinsi = b.kd_propinsi
+                                                                   AND a.kd_dati2 = b.kd_dati2
+                                                                   AND a.kd_kecamatan = b.kd_kecamatan
+                                                                   AND a.kd_kelurahan = b.kd_kelurahan
+                                                                   AND a.kd_blok = b.kd_blok
+                                                                   AND a.no_urut = b.no_urut
+                                                                   AND a.kd_jns_op = b.kd_jns_op
+                                                       WHERE data_billing_id IN (SELECT data_billing_id
+                                                                                   FROM sim_pbb.data_billing
+                                                                                  WHERE  kobil ='" . $request->Nop . "'
+                                                                                        AND tahun_pajak  in (" . $th . ") and deleted_at is null ));
+
+                            DELETE FROM spo.pembayaran_sppt
+                                    WHERE ROWID IN (SELECT b.ROWID
+                              FROM sim_pbb.billing_kolektif a
+                                   JOIN spo.pembayaran_sppt b
+                                      ON     a.tahun_pajak = b.thn_pajak_sppt
+                                         AND a.kd_propinsi = b.kd_propinsi
+                                         AND a.kd_dati2 = b.kd_dati2
+                                         AND a.kd_kecamatan = b.kd_kecamatan
+                                         AND a.kd_kelurahan = b.kd_kelurahan
+                                         AND a.kd_blok = b.kd_blok
+                                         AND a.no_urut = b.no_urut
+                                         AND a.kd_jns_op = b.kd_jns_op
+                             WHERE data_billing_id IN (SELECT data_billing_id
+                                                         FROM sim_pbb.data_billing
+                                                        WHERE  kobil ='" . $request->Nop . "'
+                                                              AND tahun_pajak  in (" . $th . ") and deleted_at is null ));
+
+                                                              UPDATE pbb.sppt
+                    SET status_pembayaran_sppt = '0'
+                  WHERE ROWID IN (SELECT b.ROWID
+                                    FROM sim_pbb.billing_kolektif a
+                                         JOIN pbb.sppt b
+                                            ON     a.tahun_pajak = b.thn_pajak_sppt
+                                               AND a.kd_propinsi = b.kd_propinsi
+                                               AND a.kd_dati2 = b.kd_dati2
+                                               AND a.kd_kecamatan = b.kd_kecamatan
+                                               AND a.kd_kelurahan = b.kd_kelurahan
+                                               AND a.kd_blok = b.kd_blok
+                                               AND a.no_urut = b.no_urut
+                                               AND a.kd_jns_op = b.kd_jns_op
+                                   WHERE data_billing_id IN (SELECT data_billing_id
+                                                         FROM sim_pbb.data_billing
+                                                        WHERE  kobil ='" . $request->Nop . "'
+                                                              AND tahun_pajak  in (" . $th . ") and deleted_at is null ))
+
+
+                                                              UPDATE sim_pbb.data_billing
+                                                                        SET kd_status = 0, tgl_bayar = NULL, pengesahan = NULL
+                                                                        WHERE  kobil ='" . $request->Nop . "'
+                                                                        AND tahun_pajak  in (" . $th . ") and deleted_at is null;
+                                                              commit;
+                                                              END;
+                                                          "));
+
+                    /* UPDATE sim_pbb.data_billing
+         SET kd_status = 0, tgl_bayar = NULL, pengesahan = NULL
+       WHERE kobil = :new.nop AND tahun_pajak = :new.tahun_pajak; */
                 }
                 //code...
                 DB::commit();
