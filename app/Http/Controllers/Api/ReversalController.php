@@ -48,18 +48,140 @@ class ReversalController extends Controller
             }
             $msg = \substr($msg, '0', '-2');
             $error = "True";
-            $code = "99";
+            $code = "96";
         } else {
-
             $tahun = [];
+            foreach ($request->Tagihan as $rr) {
+                $tahun[] = implode(',', $rr);
+            }
+            // return response()->json($tahun);
+            $nop = splitnop(trim($request->Nop));
+
+            $kd_propinsi = $nop['kd_propinsi'];
+            $kd_dati2 = $nop['kd_dati2'];
+            $kd_kecamatan = $nop['kd_kecamatan'];
+            $kd_kelurahan = $nop['kd_kelurahan'];
+            $kd_blok = $nop['kd_blok'];
+            $no_urut = $nop['no_urut'];
+            $kd_jns_op = $nop['kd_jns_op'];
+
+            db::beginTransaction();
+            $th = implode(',', $tahun);
+            try {
+                if ($kd_blok != '999') {
+                    // nop biasa
+
+                    DB::statement(DB::raw("BEGIN 
+                        DELETE from pbb.pembayaran_sppt where kd_kecamatan='$kd_kecamatan' and kd_kelurahan='$kd_kelurahan' and kd_blok='$kd_blok' and no_urut='$no_urut' and kd_jns_op='$kd_jns_op' and thn_pajak_sppt in ($th);
+                        DELETE from spo.pembayaran_sppt where kd_kecamatan='$kd_kecamatan' and kd_kelurahan='$kd_kelurahan' and kd_blok='$kd_blok' and no_urut='$no_urut' and kd_jns_op='$kd_jns_op' and thn_pajak_sppt in ($th);
+                        UPDATE PBB.SPPT set status_pembayaran_sppt='0' where kd_kecamatan='$kd_kecamatan' and kd_kelurahan='$kd_kelurahan' and kd_blok='$kd_blok' and no_urut='$no_urut' and kd_jns_op='$kd_jns_op' and thn_pajak_sppt in ($th);
+                        commit;
+                        END;
+                    "));
+
+                    /*    DB::connection('oracle_satutujuh')->table("pembayaran_sppt")
+                        ->whereraw("kd_kecamatan='$kd_kecamatan' and kd_kelurahan='$kd_kelurahan' and kd_blok='$kd_blok' and no_urut='$no_urut' and kd_jns_op='$kd_jns_op' ")
+                        ->wherein('thn_pajak_sppt', $tahun)
+                        ->delete();
+
+                    DB::table("pembayaran_sppt")
+                        ->whereraw("kd_kecamatan='$kd_kecamatan' and kd_kelurahan='$kd_kelurahan' and kd_blok='$kd_blok' and no_urut='$no_urut' and kd_jns_op='$kd_jns_op' ")
+                        ->wherein('thn_pajak_sppt', $tahun)
+                        ->delete();
+
+                    DB::connection('oracle_satutujuh')->table("sppt")
+                        ->whereraw("kd_kecamatan='$kd_kecamatan' and kd_kelurahan='$kd_kelurahan' and kd_blok='$kd_blok' and no_urut='$no_urut' and kd_jns_op='$kd_jns_op' ")
+                        ->wherein('thn_pajak_sppt', $tahun)
+                        ->update(['status_pembayaran_sppt'=> '0']); */
+                } else {
+                    // kobil
+
+
+
+                    DB::connection("oracle_satutujuh")->statement(db::raw("DELETE FROM pembayaran_sppt
+                                    WHERE ROWID IN (SELECT b.ROWID
+                              FROM sim_pbb.billing_kolektif a
+                                   JOIN pembayaran_sppt b
+                                      ON     a.tahun_pajak = b.thn_pajak_sppt
+                                         AND a.kd_propinsi = b.kd_propinsi
+                                         AND a.kd_dati2 = b.kd_dati2
+                                         AND a.kd_kecamatan = b.kd_kecamatan
+                                         AND a.kd_kelurahan = b.kd_kelurahan
+                                         AND a.kd_blok = b.kd_blok
+                                         AND a.no_urut = b.no_urut
+                                         AND a.kd_jns_op = b.kd_jns_op
+                             WHERE data_billing_id IN (SELECT data_billing_id
+                                                         FROM sim_pbb.data_billing
+                                                        WHERE  kobil ='" . $request->Nop . "'
+                                                              AND tahun_pajak  in (" . $th . ") and deleted_at is null ))"));
+
+                    DB::statement(db::raw("DELETE FROM pembayaran_sppt
+                                    WHERE ROWID IN (SELECT b.ROWID
+                              FROM sim_pbb.billing_kolektif a
+                                   JOIN pembayaran_sppt b
+                                      ON     a.tahun_pajak = b.thn_pajak_sppt
+                                         AND a.kd_propinsi = b.kd_propinsi
+                                         AND a.kd_dati2 = b.kd_dati2
+                                         AND a.kd_kecamatan = b.kd_kecamatan
+                                         AND a.kd_kelurahan = b.kd_kelurahan
+                                         AND a.kd_blok = b.kd_blok
+                                         AND a.no_urut = b.no_urut
+                                         AND a.kd_jns_op = b.kd_jns_op
+                             WHERE data_billing_id IN (SELECT data_billing_id
+                                                         FROM sim_pbb.data_billing
+                                                        WHERE  kobil ='" . $request->Nop . "'
+                                                              AND tahun_pajak  in (" . $th . ") and deleted_at is null ))"));
+
+                    DB::connection("oracle_satutujuh")->statement(db::raw("UPDATE sppt
+                    SET status_pembayaran_sppt = '0'
+                  WHERE ROWID IN (SELECT b.ROWID
+                                    FROM sim_pbb.billing_kolektif a
+                                         JOIN sppt b
+                                            ON     a.tahun_pajak = b.thn_pajak_sppt
+                                               AND a.kd_propinsi = b.kd_propinsi
+                                               AND a.kd_dati2 = b.kd_dati2
+                                               AND a.kd_kecamatan = b.kd_kecamatan
+                                               AND a.kd_kelurahan = b.kd_kelurahan
+                                               AND a.kd_blok = b.kd_blok
+                                               AND a.no_urut = b.no_urut
+                                               AND a.kd_jns_op = b.kd_jns_op
+                                   WHERE data_billing_id IN (SELECT data_billing_id
+                                                         FROM sim_pbb.data_billing
+                                                        WHERE  kobil ='" . $request->Nop . "'
+                                                              AND tahun_pajak  in (" . $th . ") and deleted_at is null ))"));
+                }
+                //code...
+                DB::commit();
+                $data = $request->only(['Nop', 'Reference']);
+                $error = "False";
+                $msg = "success";
+                $code = "00";
+            } catch (\Throwable $th) {
+                //throw $th;
+                DB::rollBack();
+                $msg = $th->getMessage();
+                $error = "True";
+                $code = "96";
+            }
+
+
+
+
+            /* return response()->json($nop);
+            die(); */
+
+            /*        $tahun = [];
             foreach ($request->Tagihan as $rr) {
                 $tahun[] = implode(',', $rr);
             }
             $ntpd = $request->KodePengesahan;
             $tahun = implode(',', $tahun);
 
-            $nop = $request->Nop;
-            $sppt = PembayaranTahun::where('nop', $nop)->whereraw("tahun_pajak in (" . $tahun . ")")->get();
+            $nop = $request->Nop; */
+
+
+
+            /* $sppt = PembayaranTahun::where('nop', $nop)->whereraw("tahun_pajak in (" . $tahun . ")")->get();
             if ($sppt->count() > 0) {
                 // return $sppt;
                 DB::beginTransaction();
@@ -159,7 +281,6 @@ class ReversalController extends Controller
                         $error = "False";
                         $msg = "sukses";
                         $code = "00";
-
                     } catch (\Throwable $e) {
                         //throw $th;
                         $error = "True";
@@ -172,8 +293,7 @@ class ReversalController extends Controller
                     $code = "34";
                     $msg = " Data reversal tidak ditemukan";
                 }
-
-            }
+            } */
         }
 
         $status = array(

@@ -72,16 +72,14 @@ class Paymentcontroller extends Controller
             }
 
 
-            if ($request->TotalBayar == $totaltagihan) {
+            if ($request->TotalBayar == $totaltagihan && $totaltagihan != 0) {
                 // lanjut
 
                 DB::beginTransaction();
                 try {
                     //code...
-
                     $chanel = Pajak::chanel($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']);
                     $kode_bank = trim($chanel->kode_bank);
-
                     $databayar = [
                         'NOP' => trim($request->Nop),
                         'KODEKP' => '0000',
