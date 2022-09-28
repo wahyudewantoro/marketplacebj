@@ -244,7 +244,7 @@ class Pajak
                                     and DATA_BILLING.no_urut='$no_urut'
                                     and DATA_BILLING.kd_jns_op='$kd_jns_op'
                                     and data_billing.kd_status='0'
-                                        AND DATA_BILLING.deleted_at IS NULL
+                                    AND DATA_BILLING.deleted_at IS NULL
                                 GROUP BY kd_status,
                                         nama_wp,
                                         nama_kelurahan,
@@ -285,7 +285,7 @@ class Pajak
         if ($kd_blok == '999') {
             // kobil
             $data = DB::table(db::raw("sim_pbb.data_billing"))->select(DB::raw("kd_propinsi,kd_dati2,kd_kecamatan,kd_kelurahan,kd_blok,no_urut,kd_jns_op,nama_wp nm_wp,nama_kelurahan nm_kelurahan,nama_kecamatan nm_kecamatan,case when expired_at<sysdate then '3' else  kd_status end status_pembayaran,null data_billing_id"))
-                ->whereraw(" kd_propinsi='$kd_propinsi' and kd_dati2='$kd_dati2' and kd_kecamatan='$kd_kecamatan' and kd_kelurahan='$kd_kelurahan' and kd_blok='$kd_blok' and no_urut='$no_urut' and kd_jns_op='$kd_jns_op'")->first();
+                ->whereraw(" kd_propinsi='$kd_propinsi' and kd_dati2='$kd_dati2' and kd_kecamatan='$kd_kecamatan' and kd_kelurahan='$kd_kelurahan' and kd_blok='$kd_blok' and no_urut='$no_urut' and kd_jns_op='$kd_jns_op' and deleted_at is null")->first();
         } else {
             $data = DB::connection('oracle_satutujuh')->table('dat_objek_pajak')
                 ->join('dat_subjek_pajak', 'dat_objek_pajak.subjek_pajak_id', '=', 'dat_subjek_pajak.subjek_pajak_id')
@@ -333,6 +333,7 @@ class Pajak
                                 AND aa.kd_blok = dat_objek_pajak.kd_blok
                                 AND aa.no_urut = dat_objek_pajak.no_urut
                                 AND aa.tahun_pajak = '$tahun'
+                                and bb.deleted_at is null
                                 and ((bb.kd_status=0 and  bb.expired_at > SYSDATE)
                                 or (bb.kd_status=1 and  bb.expired_at < SYSDATE)
                                 )) data_billing_id")
