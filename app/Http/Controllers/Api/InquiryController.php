@@ -56,9 +56,9 @@ class InquiryController extends Controller
                 $data = array(
                     "Nop" => trim($nomor_op),
                     "Nama" => $objek->nm_wp,
-                    "Kelurahan" => $objek->nm_kelurahan ?? '',
+                    "Kelurahan" => $objek->nm_kelurahan??'',
                     "KodeKp" => "0000",
-                    "KodeInstitusi" => $request->KodeInstitusi ?? '',
+                    "KodeInstitusi" => $request->KodeInstitusi??'',
                     "NoHp" => $request->NoHp ?? '',
                     "Email" => $request->Email ?? '',
                 );

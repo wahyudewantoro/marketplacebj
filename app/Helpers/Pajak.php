@@ -285,7 +285,7 @@ class Pajak
         if ($kd_blok == '999') {
             // kobil
             $data = DB::table(db::raw("sim_pbb.data_billing"))->select(DB::raw("kd_propinsi,kd_dati2,kd_kecamatan,kd_kelurahan,kd_blok,no_urut,kd_jns_op,nama_wp nm_wp,nama_kelurahan nm_kelurahan,nama_kecamatan nm_kecamatan,case when expired_at<sysdate then '3' else  kd_status end status_pembayaran,null data_billing_id"))
-                ->whereraw(" kd_propinsi='$kd_propinsi' and kd_dati2='$kd_dati2' and kd_kecamatan='$kd_kecamatan' and kd_kelurahan='$kd_kelurahan' and kd_blok='$kd_blok' and no_urut='$no_urut' and kd_jns_op='$kd_jns_op' and deleted_at is null")->first();
+                ->whereraw("tahun_pajak='$tahun' and kd_propinsi='$kd_propinsi' and kd_dati2='$kd_dati2' and kd_kecamatan='$kd_kecamatan' and kd_kelurahan='$kd_kelurahan' and kd_blok='$kd_blok' and no_urut='$no_urut' and kd_jns_op='$kd_jns_op' and deleted_at is null")->first();
         } else {
             $data = DB::connection('oracle_satutujuh')->table('dat_objek_pajak')
                 ->join('dat_subjek_pajak', 'dat_objek_pajak.subjek_pajak_id', '=', 'dat_subjek_pajak.subjek_pajak_id')
