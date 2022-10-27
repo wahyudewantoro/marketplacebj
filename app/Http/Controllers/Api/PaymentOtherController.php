@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\Pajak;
 use App\Http\Controllers\Controller;
 use App\Pembayaran;
 use App\PembayaranTahun;
@@ -51,12 +52,14 @@ class PaymentOtherController extends Controller
             $code = "99";
         } else {
 
-
+            // return $request->all();
             $tahun = $request->Tahun;
-            $nop = $request->Nop;
+            // $nop = $request->Nop;
             $DateTime = $request->DateTime;
-            $sppt = SpptHelp::TagihanTahun($nop, $tahun, $DateTime);
-
+            $nop = splitnop($request->Nop);
+            // $sppt = SpptHelp::TagihanTahun($nop, $tahun, $DateTime);
+            $sppt = Pajak::Tagihan($nop, $tahun, $DateTime);
+            // return $sppt;
             if (count($sppt) > 0) {
                 // cek jumlah tagihan
                 $totalBayar = $request->TotalBayar;
@@ -64,7 +67,8 @@ class PaymentOtherController extends Controller
 
                 $lunas = 0;
                 foreach ($sppt as $ct) {
-                    if ($ct->status_pembayaran_sppt == '0') {
+                    $sp = [0, 2];
+                    if (in_array($ct->status_pembayaran_sppt, $sp)) {
                         $tagihanDb += $ct->total;
                     } else {
                         $lunas = 1;
@@ -85,7 +89,7 @@ class PaymentOtherController extends Controller
                         // return trim($user->kode_bank);
                         $kode_bank = trim($user->kode_bank);
                         $databayar = [
-                            'NOP' => $nop,
+                            'NOP' => implode('',$nop),
                             'KODEKP' => '0000',
                             'KODEPENGESAHAN' => SpptHelp::KodePengesahan(),
                             'MERCHANT' => '0000',

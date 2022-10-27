@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\Pajak;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -36,24 +37,30 @@ class InquiryOtherController extends Controller
             $error = "True";
             $kode = '99';
         } else {
-            $nop = $request->Nop;
+            // $nop = $request->Nop;
+            $nop = splitnop($request->Nop);
 
             // TagihanTahun
-            $DateTime=$request->DateTime;
-            $ceksppt = SpptHelp::TagihanTahun($nop, $request->MasaPajak,$DateTime);
+            $DateTime = $request->DateTime;
+            $tahun = $request->MasaPajak;
+            // $ceksppt = SpptHelp::TagihanTahun($nop, $request->MasaPajak,$DateTime);
+            $ceksppt = Pajak::Tagihan($nop, $tahun, $DateTime);
+            // return $ceksppt;
+            // status_pembayaran_sppt
             if (!empty($ceksppt)) {
                 // return $ceksppt[0];
                 if (count($ceksppt) > 0) {
                     $row = $ceksppt[0];
                     $restagihan = [];
-                    if ($row->status_pembayaran_sppt == '0') {
+                    $sp = [0, 2];
+                    if (in_array($row->status_pembayaran_sppt, $sp)) {
                         $restagihan = [
                             'Tahun' => $row->tahun,
                             'Pokok' => (int)$row->pokok,
                             'Denda' => (int)$row->denda,
                             'Total' => (int)$row->denda + $row->pokok
                         ];
-                         
+
                         $msg = "sukses ";
                         $kode = '00';
                     } else {
@@ -65,17 +72,16 @@ class InquiryOtherController extends Controller
                     $kode = '10';
                 }
 
-                $dataa= array(
-                    "Nop" => $nop,
-                    "Nama" => $ceksppt[0]->nm_wp_sppt??'',
-                    "Kelurahan" => $ceksppt[0]->kelurahan_op??'',
-                    "Kecamatan" => $ceksppt[0]->kecamatan_op??'',
-                    "Dati2"=>"KAB MALANG",
-                    "Propinsi"=>"JAWA TIMUR"
+                $dataa = array(
+                    "Nop" => implode('',$nop),
+                    "Nama" => $ceksppt[0]->nm_wp_sppt ?? '',
+                    "Kelurahan" => $ceksppt[0]->kelurahan_wp_sppt ?? '',
+                    "Kecamatan" => $ceksppt[0]->kecamatan_op ?? '',
+                    "Dati2" => "KAB MALANG",
+                    "Propinsi" => "JAWA TIMUR"
                 );
 
-                $data=array_merge($dataa,$restagihan);
-
+                $data = array_merge($dataa, $restagihan);
             } else {
                 $msg = "Data tidak ditemukan";
                 $error = "True";
