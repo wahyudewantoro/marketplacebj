@@ -9,6 +9,7 @@ use App\PembayaranTahun;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class ReversalController extends Controller
@@ -187,7 +188,7 @@ class ReversalController extends Controller
                                    WHERE data_billing_id IN (SELECT data_billing_id
                                                          FROM sim_pbb.data_billing
                                                         WHERE  kobil ='" . $request->Nop . "'
-                                                              AND tahun_pajak  in (" . $th . ") and deleted_at is null ))
+                                                              AND tahun_pajak  in (" . $th . ") and deleted_at is null ));
 
 
                                                               UPDATE sim_pbb.data_billing
@@ -211,6 +212,7 @@ class ReversalController extends Controller
             } catch (\Throwable $th) {
                 //throw $th;
                 DB::rollBack();
+                Log::info($th);
                 $msg = $th->getMessage();
                 $error = "True";
                 $code = "96";
