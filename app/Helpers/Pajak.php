@@ -29,7 +29,7 @@ class Pajak
             // nop biasa
             $sppt = DB::select(DB::raw("SELECT * from (select 
             status_pembayaran_sppt,nm_wp_sppt,kelurahan_wp_sppt,thn_pajak_sppt tahun,pbb_yg_harus_dibayar_sppt pokok,
-            CASE
+                CASE
                     WHEN (SELECT COUNT (1)
                             FROM pemutihan_pajak
                             WHERE     status = '1'
@@ -38,24 +38,36 @@ class Pajak
                     THEN
                         0
                     ELSE
-                get_denda (
+                        case when status_pembayaran_sppt<>2 then 
+                        get_denda (
                         PBB_YG_HARUS_DIBAYAR_SPPT,
                         tgl_jatuh_tempo_sppt,
-                        to_date('" . $tanggal . "','yyyymmdd'))  end   Denda,
+                        to_date('" . $tanggal . "','yyyymmdd'))  
+                        else
+                            denda
+                        end 
+                    end  
+                        
+                        as  Denda,
                                                     pbb_yg_harus_dibayar_sppt + 
                                                     CASE
-                    WHEN (SELECT COUNT (1)
-                            FROM pemutihan_pajak
-                            WHERE     status = '1'
-                                AND tgl_mulai <= TRUNC (to_date('" . $tanggal . "','yyyymmdd'))
-                                AND tgl_selesai >= TRUNC (to_date('" . $tanggal . "','yyyymmdd'))) > 0
-                    THEN
-                        0
-                    ELSE
-                get_denda (
-                        PBB_YG_HARUS_DIBAYAR_SPPT,
-                        tgl_jatuh_tempo_sppt,
-                        to_date('" . $tanggal . "','yyyymmdd'))  end   as total
+                                                    WHEN (SELECT COUNT (1)
+                                                            FROM pemutihan_pajak
+                                                            WHERE     status = '1'
+                                                                AND tgl_mulai <= TRUNC (to_date('" . $tanggal . "','yyyymmdd'))
+                                                                AND tgl_selesai >= TRUNC (to_date('" . $tanggal . "','yyyymmdd'))) > 0
+                                                    THEN
+                                                        0
+                                                    ELSE
+                                                        case when status_pembayaran_sppt<>2 then 
+                                                        get_denda (
+                                                        PBB_YG_HARUS_DIBAYAR_SPPT,
+                                                        tgl_jatuh_tempo_sppt,
+                                                        to_date('" . $tanggal . "','yyyymmdd'))  
+                                                        else
+                                                            denda
+                                                        end 
+                                                    end    as total
                                                 from sppt_oltp
                                                 where thn_pajak_sppt <=$tahun and kd_propinsi ='$kd_propinsi'
                                                 and kd_dati2='$kd_dati2'
@@ -160,10 +172,16 @@ class Pajak
                     THEN
                         0
                     ELSE
-                get_denda (
+                        case when status_pembayaran_sppt<>2 then 
+                        get_denda (
                         PBB_YG_HARUS_DIBAYAR_SPPT,
                         tgl_jatuh_tempo_sppt,
-                        to_date('" . $tanggal . "','yyyymmdd'))  end   Denda,
+                        to_date('" . $tanggal . "','yyyymmdd'))  
+                        else
+                            denda
+                        end 
+                    end  
+             as Denda,
                                                     pbb_yg_harus_dibayar_sppt + 
                                                     CASE
                     WHEN (SELECT COUNT (1)
@@ -174,10 +192,16 @@ class Pajak
                     THEN
                         0
                     ELSE
-                get_denda (
+                        case when status_pembayaran_sppt<>2 then 
+                        get_denda (
                         PBB_YG_HARUS_DIBAYAR_SPPT,
                         tgl_jatuh_tempo_sppt,
-                        to_date('" . $tanggal . "','yyyymmdd'))  end   as total
+                        to_date('" . $tanggal . "','yyyymmdd'))  
+                        else
+                            denda
+                        end 
+                    end  
+                                                    as total
                                                 from sppt_oltp
                                                 where thn_pajak_sppt =$tahun and kd_propinsi ='$kd_propinsi'
                                                 and kd_dati2='$kd_dati2'
@@ -186,7 +210,7 @@ class Pajak
                                                 and kd_blok='$kd_blok'
                                                 and no_urut='$no_urut'
                                                 and kd_jns_op='$kd_jns_op'
-                                                and status_pembayaran_sppt='0'
+                                                and status_pembayaran_sppt in (0,2)
                                                 and data_billing_id is null
                                                 order by thn_pajak_sppt desc
                 "));
@@ -296,23 +320,8 @@ class Pajak
                 })
                 ->selectraw("dat_objek_pajak.kd_propinsi, dat_objek_pajak.kd_dati2, dat_objek_pajak.kd_kecamatan, dat_objek_pajak.kd_kelurahan, dat_objek_pajak.kd_blok, dat_objek_pajak.no_urut, dat_objek_pajak.kd_jns_op,nm_wp,nm_kelurahan,nm_kecamatan,
                                         NVL (
-                                            (SELECT CASE
-                                                    WHEN (SELECT COUNT (1)
-                                                            FROM pembayaran_sppt
-                                                            WHERE     kd_propinsi = a.kd_propinsi
-                                                                    AND kd_dati2 = a.kd_dati2
-                                                                    AND kd_kecamatan = a.kd_kecamatan
-                                                                    AND kd_kelurahan = a.kd_kelurahan
-                                                                    AND kd_blok = a.kd_blok
-                                                                    AND no_urut = a.no_urut
-                                                                    AND kd_jns_op = a.kd_jns_op
-                                                                    AND thn_pajak_sppt = a.thn_pajak_sppt) > 0
-                                                    THEN
-                                                        '1'
-                                                    ELSE
-                                                        A.STATUS_PEMBAYARAN_SPPT
-                                                    END
-                                                    status_pembayaran_sppt
+                                            (SELECT 
+                                                    status_pembayaran_sppt 
                                             FROM sppt a
                                             WHERE     kd_propinsi = dat_objek_pajak.kd_propinsi
                                                     AND kd_dati2 = dat_objek_pajak.kd_dati2
@@ -338,6 +347,25 @@ class Pajak
                                 or (bb.kd_status=1 and  bb.expired_at < SYSDATE)
                                 )) data_billing_id")
                 ->whereraw(" dat_objek_pajak.kd_propinsi='$kd_propinsi' and dat_objek_pajak.kd_dati2='$kd_dati2' and dat_objek_pajak.kd_kecamatan='$kd_kecamatan' and dat_objek_pajak.kd_kelurahan='$kd_kelurahan' and dat_objek_pajak.kd_blok='$kd_blok' and dat_objek_pajak.no_urut='$no_urut' and kd_jns_op='$kd_jns_op'")->first();
+
+
+                /* 
+                CASE
+                                                    WHEN (SELECT COUNT (1)
+                                                            FROM pembayaran_sppt
+                                                            WHERE     kd_propinsi = a.kd_propinsi
+                                                                    AND kd_dati2 = a.kd_dati2
+                                                                    AND kd_kecamatan = a.kd_kecamatan
+                                                                    AND kd_kelurahan = a.kd_kelurahan
+                                                                    AND kd_blok = a.kd_blok
+                                                                    AND no_urut = a.no_urut
+                                                                    AND kd_jns_op = a.kd_jns_op
+                                                                    AND thn_pajak_sppt = a.thn_pajak_sppt) > 0
+                                                    THEN
+                                                        '1'
+                                                    ELSE
+                                                        A.STATUS_PEMBAYARAN_SPPT
+                                                    END */
         }
         return $data;
     }

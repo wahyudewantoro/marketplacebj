@@ -71,6 +71,7 @@ class Paymentcontroller extends Controller
                 $totaltagihan += $tg['total'];
             }
 
+            // return json_encode($totaltagihan);
 
             if ($request->TotalBayar == $totaltagihan && $totaltagihan != 0) {
                 // lanjut

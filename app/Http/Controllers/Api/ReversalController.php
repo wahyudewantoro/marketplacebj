@@ -9,6 +9,7 @@ use App\PembayaranTahun;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class ReversalController extends Controller
@@ -156,6 +157,7 @@ class ReversalController extends Controller
             } catch (\Throwable $th) {
                 //throw $th;
                 DB::rollBack();
+                Log::info($th);
                 $msg = $th->getMessage();
                 $error = "True";
                 $code = "96";

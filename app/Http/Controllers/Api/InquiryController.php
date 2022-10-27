@@ -64,8 +64,10 @@ class InquiryController extends Controller
                 );
 
                 $restagihan = [];
+                $sb = [0, 2];
+                // return json_encode($objek->status_pembayaran);
 
-                if ($objek->status_pembayaran == '0') {
+                if (in_array($objek->status_pembayaran, $sb)) {
 
                     if ($objek->data_billing_id <> '') {
                         $msg = "Data Objek masuk dalam kode billing pembayaran kolektif";
@@ -76,7 +78,8 @@ class InquiryController extends Controller
                         $sppt = Pajak::Tagihan($nop, $tahun, $DateTime);
                         // return response()->json($sppt);
                         foreach ($sppt as $row) {
-                            if ($row->status_pembayaran_sppt == '0') {
+                            // if ($row->status_pembayaran_sppt == '0') {
+                            if (in_array($row->status_pembayaran_sppt, $sb)) {
                                 // $belumlunas += 1;
                                 $restagihan[] = [
                                     'Tahun' => $row->tahun,
