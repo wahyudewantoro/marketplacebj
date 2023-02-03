@@ -52,14 +52,92 @@ class PaymentOtherController extends Controller
             $code = "99";
         } else {
 
-            // return $request->all();
+            $tagihan = [];
+            $totaltagihan = 0;
+            // foreach ($request->Tagihan as $rr) {
+            $tahun = $request->Tahun;
+            $DateTime = $request->DateTime;
+            $nop = splitnop(trim($request->Nop));
+            $tg = Pajak::tagihanTotalSingle($nop, $tahun, $DateTime);
+            $tagihan[$tahun] = $tg;
+            $totaltagihan += $tg['total'];
+            // }
+
+            // return $request->TotalBayar;
+            if ($request->TotalBayar == $totaltagihan && $totaltagihan != 0) {
+                // lanjut
+
+                DB::beginTransaction();
+                try {
+                    //code...
+                     $chanel = Pajak::chanel($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']);
+                    $kode_bank = trim($chanel->kode_bank);
+                     $databayar = [
+                        'NOP' => trim($request->Nop),
+                        'KODEKP' => '0000',
+                        'KODEPENGESAHAN' => SpptHelp::KodePengesahan(),
+                        'MERCHANT' => $kode_bank,
+                        'DATETIME' => new Carbon($request->DateTime),
+                        'TOTALBAYAR' => $request->TotalBayar,
+                        'KODE_BANK' => $kode_bank
+                    ];
+
+                    $bayar = Pembayaran::create($databayar);
+                    // return $tagihan;
+                    foreach ($tagihan as $i => $row) {
+                        $detailbayar = [
+                            'WS_PEMBAYARAN_ID' => $bayar->id,
+                            'NOP' => $request->Nop,
+                            'KODEPENGESAHAN' => $bayar->KODEPENGESAHAN,
+                            'KODEKP' => $bayar->KODEKP,
+                            'TAHUN_PAJAK' => $i,
+                            'POKOK' => $row['pokok'],
+                            'DENDA' => $row['denda'],
+                            'TOTAL' => $row['total'],
+                            'DATETIME' => new Carbon($request->DateTime),
+                            'KODE_BANK' => $kode_bank
+                        ];
+
+                        PembayaranTahun::create($detailbayar);
+                    }
+
+                    $data['Nop'] = $bayar->NOP;
+                    $data['KodePengesahan'] = $bayar->KODEPENGESAHAN;
+                    $data['KodeKp'] = $bayar->KODEKP;
+
+                    // $data = $databayar;
+                    db::commit();
+
+                    $msg = 'Success';
+                    $error = "False";
+                    $code = "00";
+                } catch (\Throwable $th) {
+                    //throw $th;
+                    db::rollBack();
+                    $msg = $th->getMessage();
+                    $error = "True";
+                    $code = "96";
+                }
+            } else {
+                // tagihan tidak sesuai
+                $msg = 'Jumlah tagihan yang dibayarkan tidak sesuai';
+                $error = "True";
+                $code = "16";
+            }
+
+
+
+            // return $tagihan;
+
+
+            /*  // return $request->all();
             $tahun = $request->Tahun;
             // $nop = $request->Nop;
             $DateTime = $request->DateTime;
             $nop = splitnop($request->Nop);
-            // $sppt = SpptHelp::TagihanTahun($nop, $tahun, $DateTime);
+            //  $sppt = SpptHelp::TagihanTahun($nop, $tahun, $DateTime);
             $sppt = Pajak::Tagihan($nop, $tahun, $DateTime);
-            // return $sppt;
+             return $sppt;
             if (count($sppt) > 0) {
                 // cek jumlah tagihan
                 $totalBayar = $request->TotalBayar;
@@ -67,6 +145,7 @@ class PaymentOtherController extends Controller
 
                 $lunas = 0;
                 foreach ($sppt as $ct) {
+					
                     $sp = [0, 2];
                     if (in_array($ct->status_pembayaran_sppt, $sp)) {
                         $tagihanDb += $ct->total;
@@ -150,7 +229,7 @@ class PaymentOtherController extends Controller
                 $error = "True";
                 $code = "10";
                 $msg = "Data tagihan tidak ditemukan";
-            }
+            } */
         }
 
         $status = array(

@@ -145,6 +145,8 @@ class Pajak
 
     public static function  tagihanTotalSingle($nop, $tahun, $tanggal)
     {
+        // return $tahun;
+
         if ($tanggal == '') {
             $tanggal = date('Ymd');
         } else {
