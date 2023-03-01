@@ -335,7 +335,7 @@ class Pajak
                                                     AND thn_pajak_sppt = '$tahun'),
                                             3)
                                             status_pembayaran,
-                                            (SELECT case when bb.kd_status=0  then  bb.data_billing_id else null end
+                                            (SELECT max(case when bb.kd_status=0  then  bb.data_billing_id else null end)
                                                     FROM sim_pbb.billing_kolektif aa
                                                             JOIN sim_pbb.data_billing bb
                                                             ON aa.data_billing_id = bb.data_billing_id
