@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\Pajak;
 use App\Http\Controllers\Controller;
 use App\PembayaranReversal;
 use App\PembayaranReversalTahun;
@@ -56,9 +57,60 @@ class ReversalOtherController extends Controller
                 $tahun[] = implode(',', $rr);
             } */
             // $ntpd = $request->KodePengesahan;
-            $tahun =$request->Tahun;
 
-            $nop = $request->Nop;
+
+            $chanel = Pajak::chanel($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']);
+            $kode_bank = trim($chanel->kode_bank);
+
+            $tahun = $request->Tahun;
+            $nop_proses = $request->Nop;
+            $kd_propinsi = substr($nop_proses, 0, 2);
+            $kd_dati2 = substr($nop_proses, 2, 2);
+            $kd_kecamatan = substr($nop_proses, 4, 3);
+            $kd_kelurahan = substr($nop_proses, 7, 3);
+            $kd_blok = substr($nop_proses, 10, 3);
+            $no_urut = substr($nop_proses, 13, 4);
+            $kd_jns_op = substr($nop_proses, 17, 1);
+
+            // cek data pembayaran dulu
+            if ($kd_blok != '999') {
+                $cek = DB::table(db::raw("pbb.pembayaran_sppt"))
+                    ->select(db::raw("to_char(tgl_pembayaran_sppt,'yyyy-mm-dd') tanggal"))
+                    ->where('kd_propinsi', $kd_propinsi)
+                    ->where('kd_dati2', $kd_dati2)
+                    ->where('kd_kecamatan', $kd_kecamatan)
+                    ->where('kd_kelurahan', $kd_kelurahan)
+                    ->where('kd_blok', $kd_blok)
+                    ->where('no_urut', $no_urut)
+                    ->where('kd_jns_op', $kd_jns_op)
+                    ->where('thn_pajak_sppt', $tahun)
+                    ->where('kode_bank', $kode_bank)->get();
+            } else {
+                $cek = DB::table(db::raw("sim_pbb.data_billing"))
+                    ->select(db::raw("to_char(tgl_bayar,'yyyy-mm-dd') tanggal"))
+                    ->where('kd_propinsi', $kd_propinsi)
+                    ->where('kd_dati2', $kd_dati2)
+                    ->where('kd_kecamatan', $kd_kecamatan)
+                    ->where('kd_kelurahan', $kd_kelurahan)
+                    ->where('kd_blok', $kd_blok)
+                    ->where('no_urut', $no_urut)
+                    ->where('kd_jns_op', $kd_jns_op)
+                    ->where('tahun_pajak', $tahun)
+                    ->where('kode_bank', $kode_bank)->get();
+            }
+
+            foreach ($cek as $item) {
+                DB::statement(db::raw("begin  proc_hapus_bayar('" . $kd_propinsi . "', '" . $kd_dati2 . "', '" . $kd_kecamatan . "', '" . $kd_kelurahan . "', '" . $kd_blok . "', '" . $no_urut . "', '" . $kd_jns_op . "', '" . $tahun . "',to_date('" . $item->tanggal . "','yyyy-mm-dd'),'" . $kode_bank . "'); commit; end;"));
+            }
+
+            $data = $request->only(['Nop', 'Reference']);
+            $error = "False";
+            $msg = "sukses";
+            $code = "00";
+
+
+
+            /* $nop = $request->Nop;
             $sppt = PembayaranTahun::where('nop', $nop)->whereraw("tahun_pajak in (" . $tahun . ")")->get();
             if ($sppt->count() > 0) {
 
@@ -127,7 +179,7 @@ class ReversalOtherController extends Controller
                 $error = "True";
                 $code = "34";
                 $msg = " Data reversal tidak ditemukan";
-            }
+            } */
         }
 
         $status = array(
