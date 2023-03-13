@@ -21,3 +21,24 @@ Route::get('/', function () {
 
 //Route::get('/', 'HomeController@index')->name('home');
 //Route::post('/payment', 'HomeController@payment')->name('home.payment');
+
+
+Route::middleware(['basicAuth', 'logApi'])->group(function () {
+
+
+    
+
+    // routing bank jatim
+    Route::post('inquiry', 'Api\InquiryController@index')->name('inquiry');
+    Route::post('payment', 'Api\Paymentcontroller@index')->name('payment');
+    Route::post('reversal', 'Api\ReversalController@index')->name('reversal');
+
+
+    // routing kantor Pos
+    Route::post('inquiry-pbb', 'Api\InquiryOtherController@index')->name('inquiry.pbb');
+    Route::post('payment-pbb', 'Api\PaymentOtherController@index')->name('payment.pbb');
+    Route::post('reversal-pbb', 'Api\ReversalOtherController@index')->name('reversal.pbb');
+});
+
+
+route()
