@@ -22,7 +22,7 @@ Route::get('/', function () {
 //Route::get('/', 'HomeController@index')->name('home');
 //Route::post('/payment', 'HomeController@payment')->name('home.payment');
 
-
+/* 
 Route::middleware(['basicAuth', 'logApi'])->group(function () {
 
 
@@ -39,6 +39,6 @@ Route::middleware(['basicAuth', 'logApi'])->group(function () {
     Route::post('payment-pbb', 'Api\PaymentOtherController@index')->name('payment.pbb');
     Route::post('reversal-pbb', 'Api\ReversalOtherController@index')->name('reversal.pbb');
 });
+ */
 
-
-route()
+// route()
