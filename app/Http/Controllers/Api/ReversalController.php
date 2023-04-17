@@ -91,7 +91,7 @@ class ReversalController extends Controller
                     // cek data pembayaran dulu
                     if ($kd_blok != '999') {
                         $cek = DB::table(db::raw("pbb.pembayaran_sppt"))
-                            ->select(db::raw("to_char(tgl_pembayaran_sppt,'yyyy-mm-dd') tanggal"))
+                            ->select(db::raw("to_char(tgl_pembayaran_sppt,'yyyy-mm-dd') tanggal,pengesahan"))
                             ->where('kd_propinsi', $kd_propinsi)
                             ->where('kd_dati2', $kd_dati2)
                             ->where('kd_kecamatan', $kd_kecamatan)
@@ -103,7 +103,7 @@ class ReversalController extends Controller
                             ->where('kode_bank', $kode_bank)->get();
                     } else {
                         $cek = DB::table(db::raw("sim_pbb.data_billing"))
-                            ->select(db::raw("to_char(tgl_bayar,'yyyy-mm-dd') tanggal"))
+                            ->select(db::raw("to_char(tgl_bayar,'yyyy-mm-dd') tanggal,pengesahan"))
                             ->where('kd_propinsi', $kd_propinsi)
                             ->where('kd_dati2', $kd_dati2)
                             ->where('kd_kecamatan', $kd_kecamatan)
@@ -116,7 +116,7 @@ class ReversalController extends Controller
                     }
 
                     foreach ($cek as $item) {
-                        DB::statement(db::raw("begin  proc_hapus_bayar('" . $kd_propinsi . "', '" . $kd_dati2 . "', '" . $kd_kecamatan . "', '" . $kd_kelurahan . "', '" . $kd_blok . "', '" . $no_urut . "', '" . $kd_jns_op . "', '" . $tahun . "',to_date('" . $item->tanggal . "','yyyy-mm-dd'),'" . $kode_bank . "'); commit; end;"));
+                        DB::statement(db::raw("begin  proc_hapus_bayar('" . $kd_propinsi . "', '" . $kd_dati2 . "', '" . $kd_kecamatan . "', '" . $kd_kelurahan . "', '" . $kd_blok . "', '" . $no_urut . "', '" . $kd_jns_op . "', '" . $tahun . "',to_date('" . $item->tanggal . "','yyyy-mm-dd'),'" . $kode_bank . "','".$item->pengesahan."'); commit; end;"));
                     }
                 }
 
