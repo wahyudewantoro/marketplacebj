@@ -49,7 +49,9 @@ class Sppt
                                                     tgl_jatuh_tempo_sppt,
                                                     to_date('" . $tanggal . "','yyyymmdd'))  end   as total
                                                                             from sppt_oltp
-                                                                            where thn_pajak_sppt <=$tahun and kd_propinsi =substr('$nop',1,2) 
+                                                                            where thn_pajak_sppt <=$tahun 
+																			and kd_propinsi =substr('$nop',1,2) 
+																			and status_pembayaran_sppt='0'
                                                                             and kd_dati2=substr('$nop',3,2)
                                                                             and kd_kecamatan=substr('$nop',5,3)
                                                                             and kd_kelurahan=substr('$nop',8,3)

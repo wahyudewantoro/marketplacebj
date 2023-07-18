@@ -69,7 +69,9 @@ class Pajak
                                                         end 
                                                     end    as total
                                                 from sppt_oltp
-                                                where thn_pajak_sppt <=$tahun and kd_propinsi ='$kd_propinsi'
+                                                where thn_pajak_sppt <=$tahun 
+												and status_pembayaran_sppt='0'
+												and kd_propinsi ='$kd_propinsi'
                                                 and kd_dati2='$kd_dati2'
                                                 and kd_kecamatan='$kd_kecamatan'
                                                 and kd_kelurahan='$kd_kelurahan'
