@@ -1,0 +1,18 @@
+version: "3.7"
+services:
+  pembayaranpbbapp:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: pembayaranpbb-app
+    container_name: pembayaranpbb-app-live
+    ports:
+        - "127.0.0.1:8000:80"
+    restart: always
+    environment:
+      TEST_ENV: TEST_ENV
+    networks:
+      - pembayaranpbbnet
+networks:
+  pembayaranpbbnet:
+    driver: bridge
